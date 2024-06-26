@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "catdel"
+version = "0.1.0"
+description = "A web-based catchment delineation tool."
+authors = ["Ashkan Shokri <ashkan.shokri@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+streamlit = "^1.36.0"
+pysheds = "^0.4"
+fiona = "^1.9.6"
+matplotlib = "^3.9.0"
+folium = "^0.17.0"
+numpy = "1.25.2"
+geopandas = "^1.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
+pytest = "^8.2.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
