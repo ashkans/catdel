@@ -1,6 +1,7 @@
 from matplotlib import pylab as plt
 import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+    
 
 def add_outlets(config, ax):
     ax.scatter(config['x'], config['y'], marker='o', c='r', s=20)
