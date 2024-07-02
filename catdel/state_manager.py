@@ -4,7 +4,6 @@ from catdel.config import Config
 class StateManager:
     def __init__(self):
         self._boolean_states = {
-            'demUploaded':False,
             'showStreams':True,
             'streamsAdded':False,
             'catchmentAdded':False,
@@ -19,7 +18,7 @@ class StateManager:
             'allStreamsCalculated': False
 
         }
-        self._other_states = ['map', 'delin', 'grid', 'dem', 'outlet_lat', 'outlet_lng', 'allStreams']
+        self._other_states = ['map', 'delin', 'grid', 'dem', 'outlet_lat', 'outlet_lng', 'allStreams', 'uploaded_file']
         self._initialize_booleans()
         self._initialize_config()
         self._initialize_other()

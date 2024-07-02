@@ -2,9 +2,16 @@ from typing import Union, Tuple
 import io
 from pysheds.grid import Grid
 from pysheds.sview import Raster
-from catdel.config import Config
 import streamlit as st
 import numpy as np
+from catdel.state_manager import StateManager
+
+from shapely.geometry import shape, mapping
+from shapely.geometry import LineString, Polygon, MultiPolygon
+
+from io import BytesIO
+import geopandas as gpd
+
 dirmap = (64, 128, 1, 2, 4, 8, 16, 32)
 
 def load_grid_and_data(fn: Union[str, io.BytesIO], pyproj:str) -> Tuple[Grid, Raster]:
@@ -23,15 +30,14 @@ def load_grid_and_data(fn: Union[str, io.BytesIO], pyproj:str) -> Tuple[Grid, Ra
     grid.viewfinder = data.viewfinder
     return grid, data
 
-import geojson
-from shapely.geometry import shape, mapping
-from shapely.geometry import LineString, Polygon, MultiPolygon
+
 def simplify_geometry(geometry, tolerance):
     geom = shape(geometry)
     if isinstance(geom, (LineString, Polygon, MultiPolygon)):
         simplified_geom = geom.simplify(tolerance, preserve_topology=True)
         return mapping(simplified_geom)
     return geometry  # Return as is if it's not a LineString or Polygon
+
 
 def simplify_geojson_collection(geojson_obj, tolerance):
     if geojson_obj['type'] == 'FeatureCollection':
@@ -61,7 +67,7 @@ def all_streams(dem, grid, config):
     branches = grid.extract_river_network(fdir,
                                             acc > config.acc_thr,
                                             dirmap=dirmap)
-    branches = simplify_geojson_collection(branches, 1)
+    branches = simplify_geojson_collection(branches, 50)
     return branches
 
 def delin(dem, grid, config):
@@ -95,7 +101,7 @@ def delin(dem, grid, config):
     catch_view = grid.view(clipped_catch, dtype=np.uint8)
 
     # Create a vector representation of the catchment mask
-    catchment_shape = grid.polygonize(catch_view)
+    catchment_shape = list(grid.polygonize(catch_view))
 
 
     branches = grid.extract_river_network(fdir,
@@ -113,3 +119,66 @@ def delin(dem, grid, config):
 
 
 
+def add_all_streams():
+    sm = StateManager.get_instance()
+    if not sm.allStreamsCalculated and sm.dem is not None:
+        config=sm.config
+        dem, grid = sm.get_states('dem', 'grid')
+        allStreams =  all_streams(dem, grid, config)
+        sm.add_states(allStreams=allStreams)
+        sm.allStreamsAdded = False
+        sm.allStreamsCalculated = True
+
+
+def run_deliniation():
+    sm = StateManager.get_instance()
+    config=sm.config
+    dem, grid = sm.get_states('dem', 'grid')
+    out = delin(dem, grid, config)
+    sm.add_states(delin=out)
+    sm.streamsAdded = False
+    sm.catchmentAdded = False
+    sm.outletAdded= False
+    sm.needsRender = True
+    sm.boundaryAdded=False
+    sm.map=None
+    sm.allStreamsAdded=False
+
+
+def read_grid_and_dem():
+    sm = StateManager.get_instance()
+    config = sm.config
+    if sm.uploaded_file and sm.dem is None:
+        # Read the file from the uploaded file buffer
+        file_buffer = io.BytesIO(sm.uploaded_file.getvalue())
+        grid, dem = load_grid_and_data(file_buffer, config.proj.pyproj)
+        sm.add_states(grid=grid, dem=dem)
+
+
+def convert_catchment_to_gdf():
+    sm = StateManager.get_instance()
+    config = sm.config
+    catchment = sm.delin['catchment_shape']
+
+    tolerance=1
+    geoms = [shape(s[0]).simplify(tolerance)  for s in catchment]
+    gdf = gpd.GeoDataFrame({'geometry': geoms}, crs=config.proj.dst_crs)
+    
+    return gdf
+
+
+def buffer_catchment_geojson():
+    # Convert DataFrame to CSV and store in buffer
+    buffer = BytesIO()
+    gdf = convert_catchment_to_gdf()
+    #gdf.to_file(buffer, index=False)
+    
+    # Convert GeoDataFrame to GeoJSON
+    geojson = gdf.to_json()
+
+    # Create a buffer and write GeoJSON to it
+    
+    buffer.write(geojson.encode('utf-8'))
+    buffer.seek(0)
+
+    return buffer
