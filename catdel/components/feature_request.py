@@ -51,5 +51,5 @@ def _modal():
     
 
 def modal():
-    if st.button('📢 Have a Feature Request? Let Us Know!', use_container_width=True)
+    if st.button('📢 Have a Feature Request? Let Us Know!', use_container_width=True):
         _modal()
