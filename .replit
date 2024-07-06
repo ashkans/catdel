@@ -10,8 +10,20 @@ channel = "stable-23_05"
 
 
 [deployment]
-run = ["streamlit", "run", "--server.address", "0.0.0.0", "--server.headless", "true", "--server.enableCORS=false", "--server.enableWebsocketCompression=false", "--server.runOnSave=false", "catdel/main.py"]
+run = [
+  "streamlit",
+  "run",
+  "--server.address",
+  "0.0.0.0",
+  "--server.headless",
+  "true",
+  "--server.enableCORS=false",
+  "--server.enableWebsocketCompression=false",
+  "--server.runOnSave=false",
+  "catdel/main.py",
+]
 deploymentTarget = "cloudrun"
+build = ["poetry", "install"]
 
 [[ports]]
 localPort = 8501

@@ -5,13 +5,18 @@ from streamlit_folium import st_folium
 
 from catdel.state_manager import StateManager
 
+# only load Google analytics on server
+if st.config.get_option('server.runOnSave'):
+    from catdel import add_ga
+    add_ga.inject_ga()
+
 
 def main():
     st.set_page_config(layout="wide")
     sm = StateManager.get_instance()
     config = sm.config
     components.misc.file_uploader()
-    
+
     with st.spinner('Reading Grid and DEM...'):
         process.read_grid_and_dem()
     with st.spinner('Adding all streams...'):
@@ -31,17 +36,16 @@ def main():
                            use_container_width=True)
         components.folium_map.last_clicked_recorder(output)
 
-    
     components.feature_request.modal()
+
     if not st.config.get_option('server.runOnSave'):
-        #st.write(st.session_state)
-        pass
+        st.write(st.session_state)
+
     else:
         pass
 
-
-    
     #components.footer.footer()
+
 
 if __name__ == '__main__':
     main()
