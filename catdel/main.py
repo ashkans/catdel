@@ -24,7 +24,7 @@ def main():
     
     config = sm.config
     
-    with st.expander('file uploader', expanded=sm.dem is None):
+    with st.expander('', expanded=sm.dem is None, icon=':material/upload:'):
         components.misc.file_uploader()
 
     
@@ -42,14 +42,16 @@ def main():
 
 
 
-        with st.container(height=int(config.map_height*1.1)):
+        with st.container(height=int(config.map_height*1.3)):
+            
             sm.map_outputs = st_folium(m,
                             width=config.map_width,
                             height=config.map_height,
                             returned_objects=['last_clicked'],
                             render=False,
                             use_container_width=True)
-            
+            if not sm.outlet:
+                st.write('### Select the location of the outlet on the map')
             
         
 
