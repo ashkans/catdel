@@ -20,7 +20,9 @@ if st.config.get_option('server.runOnSave'):
     add_ga.inject_ga()
 
 
+
 def main():
+    components.buttons.add_sample_data_download()
     
     config = sm.config
     
@@ -41,8 +43,10 @@ def main():
 
 
 
-
-        with st.container(height=int(config.map_height*1.3)):
+        if not sm.outlet:
+            st.write('### Select the location of the outlet on the map')
+            
+        with st.container(height=int(config.map_height*1.1)):
             
             sm.map_outputs = st_folium(m,
                             width=config.map_width,
@@ -50,8 +54,6 @@ def main():
                             returned_objects=['last_clicked'],
                             render=False,
                             use_container_width=True)
-            if not sm.outlet:
-                st.write('### Select the location of the outlet on the map')
             
         
 

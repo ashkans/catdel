@@ -8,8 +8,8 @@ default_config = {
     'acc_thr': 5000,
     'geographic_crs': 'epsg:4326',
     'dst_crs': 'EPSG:3857',
-    'min_zoom': 12,
-    'zoom_start': 13,
+    'min_zoom': 11,
+    'zoom_start': 12,
     'max_zoom': 17,
     'map_width': 700,
     'map_height': 500,
@@ -17,7 +17,7 @@ default_config = {
     'page_config': {
         'layout': 'wide',
         'page_icon': ':droplet:', #
-        'initial_sidebar_state': "collapsed",
+        'initial_sidebar_state': "expanded",
         'menu_items': {
             'Get Help': None,
             'Report a bug': None,

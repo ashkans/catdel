@@ -47,8 +47,9 @@ class StateManager:
 
     @property
     def outlet(self):
-        if self.map_outputs['last_clicked'] is not None:
-            return self.map_outputs['last_clicked']['lat'],self.map_outputs['last_clicked']['lng']
+        if self.map_outputs is not None:
+            if self.map_outputs['last_clicked'] is not None:
+                return self.map_outputs['last_clicked']['lat'],self.map_outputs['last_clicked']['lng']
         
 
 

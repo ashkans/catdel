@@ -46,3 +46,14 @@ def download_streams():
                 use_container_width=True
             )
 
+
+def add_sample_data_download():
+    with open("sample_data/sample_dem.tif", "rb") as file:
+        st.sidebar.download_button(
+            label='📥 Download Sample DEM File',
+            data=file,
+            file_name='sample_dem.tif',
+            mime='image/tiff',  # Add the mime type here
+            use_container_width=True
+        )
+

@@ -188,7 +188,7 @@ def buffer_stream_geojson():
     gdf = convert_streams_to_gdf()
     #gdf.to_file(buffer, index=False)
     
-    gdf.to_file('streams.shp')
+    
     # Convert GeoDataFrame to GeoJSON
     geojson = gdf.to_json()
 
