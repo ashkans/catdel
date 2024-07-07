@@ -15,10 +15,11 @@ class StateManager:
             'outletAdded': False,
             'lastClickHolderAdded':False,
             'allStreamsAdded': False,
-            'allStreamsCalculated': False
+            'allStreamsCalculated': False,
+            
 
         }
-        self._other_states = ['map', 'delin', 'grid', 'dem', 'outlet_lat', 'outlet_lng', 'allStreams', 'uploaded_file']
+        self._other_states = ['map', 'delin', 'grid', 'dem', 'outlet_lat', 'outlet_lng', 'allStreams', 'uploaded_file', 'map_outputs']
         self._initialize_booleans()
         self._initialize_config()
         self._initialize_other()
@@ -44,6 +45,9 @@ class StateManager:
         for state in list(self._boolean_states.keys()) + self._other_states + ['config']:
             setattr(StateManager, state, self._create_property(state))
 
+    @property
+    def outlet(self):
+        return self.map_outputs['last_clicked']['lat'],self.map_outputs['last_clicked']['lng']
 
 
     def _create_property(self, state):

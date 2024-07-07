@@ -5,6 +5,10 @@ import numpy as np
 from catdel.state_manager import StateManager
 from catdel import components
 from catdel import process
+import folium
+import numpy as np
+from catdel.grid_processors import get_grid_center_geo, get_grid_bounds_geo, get_grid_bounds
+sm = StateManager.get_instance()        
 
 def last_clicked_holder():
     sm = StateManager.get_instance()
@@ -15,27 +19,48 @@ def last_clicked_recorder(output):
     sm = StateManager.get_instance()
 
     lc = output['last_clicked']
+    
     if lc:
         sm.outlet_lat = lc['lat']
         sm.outlet_lng = lc['lng']
         
 
 def add_outlet():
-    sm = StateManager.get_instance()
+    
     m = sm.map
-    proj = sm.config.proj
-    loc = sm.outlet_lat, sm.outlet_lng
+    
+    loc = sm.outlet
     
     folium.Marker(loc).add_to(m)
-    
+
+
+def add_raster(raster, name = None, opacity=0.6, interactive=True, cross_origin=False, zindex=1000, **kwargs):
+        geographic_bounds = get_grid_bounds_geo(sm.grid, sm.config.proj)
+        img = folium.raster_layers.ImageOverlay(
+        name=name,
+        image=np.where(raster, raster, np.nan),
+        bounds=geographic_bounds,
+        opacity=opacity,
+        interactive=interactive,
+        cross_origin=cross_origin,
+        zindex=zindex,
+        **kwargs
+        )
+        img.add_to(sm.map)
+
 
 def folium_map():
     sm = StateManager.get_instance()
     grid = sm.get_state('grid')
     config = sm.config
 
-    geographic_center = get_grid_center_geo(grid, config.proj)
-    m = folium.Map(location=geographic_center, zoom_start=config.zoom_start, crs=config.proj.folium_proj, max_zoom=config.max_zoom, min_zoom=config.min_zoom,prefer_canvas=True)
+    geographic_center = get_grid_center_geo(grid, config.proj) # TODO should go to the initiale process and saved as state
+    m = folium.Map(location=geographic_center,
+     zoom_start=config.zoom_start,
+     crs=config.proj.folium_proj,
+     max_zoom=config.max_zoom,
+     min_zoom=config.min_zoom,
+     prefer_canvas=True)
     sm.add_states(map=m)
 
 
@@ -157,7 +182,7 @@ def get_map():
     
 
 
-    render_map_if_needed()
+    #render_map_if_needed()
     
 
     return sm.map

@@ -11,7 +11,7 @@ from shapely.geometry import LineString, Polygon, MultiPolygon
 
 from io import BytesIO
 import geopandas as gpd
-
+sm = StateManager.get_instance()
 dirmap = (64, 128, 1, 2, 4, 8, 16, 32)
 
 def load_grid_and_data(fn: Union[str, io.BytesIO], pyproj:str) -> Tuple[Grid, Raster]:
@@ -67,7 +67,7 @@ def all_streams(dem, grid, config):
     branches = grid.extract_river_network(fdir,
                                             acc > config.acc_thr,
                                             dirmap=dirmap)
-    branches = simplify_geojson_collection(branches, 50)
+    branches = simplify_geojson_collection(branches, 5000)
     return branches
 
 def delin(dem, grid, config):
@@ -77,13 +77,13 @@ def delin(dem, grid, config):
     acc, fdir = delin_preprocess(dem, grid)
 
     # Snap pour point to high accumulation cell
-    lat, lng = st.session_state['outlet_lat'], st.session_state['outlet_lng'] 
+    lat, lng = sm.outlet
     x, y = config.proj.transform_from_geo(lat, lng)
     
     lat_snap, lng_snap = grid.snap_to_mask(acc > config.snap_thr, (x, y))
 
-    st.session_state['outlet_lat_snap'] = lat_snap
-    st.session_state['outlet_lng_snap'] = lng_snap
+    sm.outlet_snap = (lat_snap, lng_snap)
+    
 
     # Delineate the catchment
     catch = grid.catchment(x=lat_snap,
@@ -131,18 +131,25 @@ def add_all_streams():
 
 
 def run_deliniation():
+
     sm = StateManager.get_instance()
-    config=sm.config
-    dem, grid = sm.get_states('dem', 'grid')
-    out = delin(dem, grid, config)
-    sm.add_states(delin=out)
-    sm.streamsAdded = False
-    sm.catchmentAdded = False
-    sm.outletAdded= False
-    sm.needsRender = True
-    sm.boundaryAdded=False
-    sm.map=None
-    sm.allStreamsAdded=False
+
+    if sm.map_outputs is None or sm.map_outputs['last_clicked'] is None:
+        st.toast('Please select the catchment outlet first.') 
+
+    else:
+
+        config=sm.config
+        dem, grid = sm.get_states('dem', 'grid')
+        out = delin(dem, grid, config)
+        sm.add_states(delin=out)
+        sm.streamsAdded = False
+        sm.catchmentAdded = False
+        sm.outletAdded= False
+        sm.needsRender = True
+        sm.boundaryAdded=False
+        sm.map=None
+        sm.allStreamsAdded=False
 
 
 def read_grid_and_dem():
@@ -153,6 +160,14 @@ def read_grid_and_dem():
         file_buffer = io.BytesIO(sm.uploaded_file.getvalue())
         grid, dem = load_grid_and_data(file_buffer, config.proj.pyproj)
         sm.add_states(grid=grid, dem=dem)
+
+
+def convert_streams_to_gdf():
+    sm = StateManager.get_instance()
+    branches = sm.delin['branches']
+    gdf = gpd.GeoDataFrame.from_features(branches, crs=sm.config.dst_crs)
+    return gdf
+
 
 
 def convert_catchment_to_gdf():
@@ -166,6 +181,23 @@ def convert_catchment_to_gdf():
     
     return gdf
 
+
+def buffer_stream_geojson():
+    # Convert DataFrame to CSV and store in buffer
+    buffer = BytesIO()
+    gdf = convert_streams_to_gdf()
+    #gdf.to_file(buffer, index=False)
+    
+    gdf.to_file('streams.shp')
+    # Convert GeoDataFrame to GeoJSON
+    geojson = gdf.to_json()
+
+    # Create a buffer and write GeoJSON to it
+    
+    buffer.write(geojson.encode('utf-8'))
+    buffer.seek(0)
+
+    return buffer
 
 def buffer_catchment_geojson():
     # Convert DataFrame to CSV and store in buffer
