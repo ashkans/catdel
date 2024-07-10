@@ -1,7 +1,10 @@
 import os
 from psycopg2 import pool
 from dotenv import load_dotenv
+from datetime import datetime
+from catdel.state_manager import StateManager
 
+sm = StateManager.get_instance()
 
 def connect_to_db():
     # Load .env file
@@ -14,16 +17,25 @@ def connect_to_db():
         10,  # Maximum number of connections in the pool
         connection_string
     )
-    # Check if the pool was created successfully
-    if connection_pool:
-        print("Connection pool created successfully")
+
     # Get a connection from the pool
     conn = connection_pool.getconn()
 
     return conn
 
 
-def save_to_db(data):
+def save_to_feature_request(data):
+    '''
+    CREATE TABLE feature_requests (
+    id SERIAL PRIMARY KEY,
+    user_name VARCHAR(255),
+    user_email VARCHAR(255),
+    feature_title VARCHAR(255),
+    feature_description TEXT,
+    priority VARCHAR(50),
+    timestamp TIMESTAMP
+    );
+    '''
     conn = connect_to_db()
     cur = conn.cursor()
     insert_query = """
@@ -52,3 +64,27 @@ def fetch_data_from_db():
     cur.close()
     conn.close()
     return rows, columns
+
+
+# Function to save a record in PostgreSQL
+def log(function, log_message):
+    '''
+    CREATE TABLE log (
+    id SERIAL PRIMARY KEY,
+    function TEXT NOT NULL,
+    log_message TEXT NOT NULL,
+    filename TEXT NOT NULL DEFAULT 'NONE',
+    call_time TIMESTAMP NOT NULL,
+    call_date DATE NOT NULL,
+    session_id TEXT NOT NULL,
+    session_start_time TIMESTAMP NOT NULL
+    );'''
+    conn = connect_to_db()
+    cursor = conn.cursor()
+    call_time = datetime.now()
+    filename = sm.uploaded_file.name if sm.uploaded_file else 'NONE'
+    cursor.execute("INSERT INTO log (function, log_message, filename, call_time, call_date, session_id, session_start_time) VALUES (%s, %s, %s, %s, %s, %s, %s)", 
+                   (function, log_message, filename, call_time, call_time.date(), sm.seession_id, sm.session_start_time))
+    conn.commit()
+    cursor.close()
+    conn.close()
