@@ -1,6 +1,9 @@
 import streamlit as st
 from catdel.config import Config
+from datetime import datetime
 
+
+ 
 class StateManager:
     def __init__(self):
         self._boolean_states = {
@@ -16,8 +19,6 @@ class StateManager:
             'lastClickHolderAdded':False,
             'allStreamsAdded': False,
             'allStreamsCalculated': False,
-            
-
         }
         self._other_states = ['map', 'delin', 'grid', 'dem', 'outlet_lat', 'outlet_lng', 'allStreams', 'uploaded_file', 'map_outputs']
         self._initialize_booleans()
@@ -25,6 +26,8 @@ class StateManager:
         self._initialize_other()
         self._create_properties()
         st.session_state['state_manager'] = self
+
+        self.session_start_time = datetime.now()
 
     def _initialize_booleans(self):
         for key, value in self._boolean_states.items():
@@ -39,6 +42,11 @@ class StateManager:
         for key in self._other_states:
             st.session_state[key] = None
 
+    @property
+    def seession_id(self):
+        from streamlit.runtime.scriptrunner import get_script_run_ctx
+        ctx = get_script_run_ctx()
+        return ctx.session_id   
 
 
     def _create_properties(self):

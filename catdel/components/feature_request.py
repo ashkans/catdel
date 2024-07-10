@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+from catdel import db
 
 FIELDS = {
     'user_name': {'type': 'text_input', 'label': 'Your Name', 'placeholder': 'John Doe'},
@@ -34,8 +35,7 @@ def form(fields):
                 feature_request = {field: form_data[field] for field in fields}
                 feature_request['Timestamp'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                df = pd.DataFrame([feature_request])
-                df.to_csv('feature_requests.csv', mode='a', index=False, header=False)
+                db.save_to_feature_request(feature_request)
                 st.session_state['submitted'] = True
                 st.success('Thank you for your feature request! You cannot resubmit the form.')
     else:

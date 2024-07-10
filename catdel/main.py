@@ -8,6 +8,9 @@ from catdel import process
 from streamlit_folium import st_folium
 from catdel.state_manager import StateManager
 
+from catdel import db
+
+
 sm = StateManager.get_instance()
 st.set_page_config('CatDel',**sm.config.page_config) # should go to config
 
@@ -20,8 +23,8 @@ if st.config.get_option('server.runOnSave'):
     add_ga.inject_ga()
 
 
-
 def main():
+
     components.buttons.add_sample_data_download()
     
     config = sm.config
