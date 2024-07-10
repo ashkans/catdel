@@ -83,8 +83,8 @@ def log(function, log_message):
     cursor = conn.cursor()
     call_time = datetime.now()
     filename = sm.uploaded_file.name if sm.uploaded_file else 'NONE'
-    cursor.execute("INSERT INTO log (function, log_message, filename, call_time, call_date, session_id, session_start_time) VALUES (%s, %s, %s, %s, %s, %s, %s)", 
-                   (function, log_message, filename, call_time, call_time.date(), sm.seession_id, sm.session_start_time))
+    cursor.execute("INSERT INTO log (function, log_message, filename, call_time,  session_id, session_start_time) VALUES (%s, %s, %s, %s, %s, %s)", 
+                   (function, log_message, filename, call_time, sm.seession_id, sm.session_start_time))
     conn.commit()
     cursor.close()
     conn.close()
