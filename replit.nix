@@ -1,5 +1,6 @@
 {pkgs}: {
   deps = [
+    pkgs.postgresql
     pkgs.vim
     pkgs.tk
     pkgs.tcl

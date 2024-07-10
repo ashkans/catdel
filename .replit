@@ -23,7 +23,7 @@ run = [
   "catdel/main.py",
 ]
 deploymentTarget = "cloudrun"
-build = ["poetry", "install"]
+build = ["sh", "-c", "poetry install && poetry run python catdel/add_ga.py"]
 
 [[ports]]
 localPort = 8501
