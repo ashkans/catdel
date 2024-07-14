@@ -14,7 +14,7 @@ def connect_to_db():
     # Create a connection pool
     connection_pool = pool.SimpleConnectionPool(
         1,  # Minimum number of connections in the pool
-        10,  # Maximum number of connections in the pool
+        1,  # Maximum number of connections in the pool
         connection_string
     )
 
@@ -75,7 +75,6 @@ def log(function, log_message):
     log_message TEXT NOT NULL,
     filename TEXT NOT NULL DEFAULT 'NONE',
     call_time TIMESTAMP NOT NULL,
-    call_date DATE NOT NULL,
     session_id TEXT NOT NULL,
     session_start_time TIMESTAMP NOT NULL
     );'''
