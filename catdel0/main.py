@@ -24,15 +24,10 @@ if st.config.get_option('server.runOnSave'):
 
 
 def main():
-
     components.buttons.add_sample_data_download()
-    
     config = sm.config
-    
     with st.expander('', expanded=sm.dem is None, icon=':material/upload:'):
         components.misc.file_uploader()
-
-    
     with st.spinner('Reading Grid and DEM...'):
         process.read_grid_and_dem()
     with st.spinner('Adding all streams...'):
@@ -42,9 +37,6 @@ def main():
     if sm.dem is not None:
         
         m = components.folium_map.get_map()
-
-
-
 
         if not sm.outlet:
             st.write('### Select the location of the outlet on the map')

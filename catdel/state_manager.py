@@ -6,7 +6,7 @@ class StateManager:
     def __init__(self):
         """Initializes the StateManager and sets up the initial states."""
         self._boolean_states: dict[str, bool] = {}
-        self._other_states: list[str] = []
+        self._other_states: list[str] = ['dem_file', 'dem', 'map', 'grid']
         
         self._initialize_booleans()
         self._initialize_other()
