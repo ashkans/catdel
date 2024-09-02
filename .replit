@@ -22,7 +22,7 @@ run = [
   "--server.runOnSave=false",
   "catdel/main.py",
 ]
-deploymentTarget = "cloudrun"
+deploymentTarget = "gce"
 build = ["sh", "-c", "poetry install && poetry run python catdel/add_ga.py"]
 
 [[ports]]
