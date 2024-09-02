@@ -18,4 +18,4 @@ def load_grid_and_data(fn: Union[str, io.BytesIO], pyproj:str) -> Tuple[Grid, Ra
     data = grid.read_raster(fn)
     data = data.to_crs(pyproj)
     grid.viewfinder = data.viewfinder
-    return grid, data
+    return data, grid

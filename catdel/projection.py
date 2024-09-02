@@ -75,7 +75,5 @@ class Projection:
         Returns:
             list[tuple[float, float]]: An array of transformed coordinates in the geographic CRS.
         """
-        try:
-            return [self.to_geo(x, y) for x, y in arr]
-        except Exception as e:
-            raise ValueError(f"Error transforming array of coordinates to geographic CRS: {e}")
+        
+        return [self.to_geo(x, y) for x, y in arr]

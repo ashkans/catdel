@@ -11,6 +11,7 @@ def connect_to_db():
     load_dotenv()
     # Get the connection string from the environment variable
     connection_string = os.getenv('DATABASE_URL')
+    
     # Create a connection pool
     connection_pool = pool.SimpleConnectionPool(
         1,  # Minimum number of connections in the pool
@@ -81,9 +82,9 @@ def log(function, log_message):
     conn = connect_to_db()
     cursor = conn.cursor()
     call_time = datetime.now()
-    filename = sm.uploaded_file.name if sm.uploaded_file else 'NONE'
+    filename = sm.dem_file.name if sm.dem_file else 'NONE'
     cursor.execute("INSERT INTO log (function, log_message, filename, call_time,  session_id, session_start_time) VALUES (%s, %s, %s, %s, %s, %s)", 
-                   (function, log_message, filename, call_time, sm.seession_id, sm.session_start_time))
+                   (function, log_message, filename, call_time, sm.session_id, datetime.now()))
     conn.commit()
     cursor.close()
     conn.close()

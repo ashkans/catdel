@@ -5,14 +5,15 @@ from catdel.config import Config
 class StateManager:
     def __init__(self):
         """Initializes the StateManager and sets up the initial states."""
-        self._boolean_states: dict[str, bool] = {}
-        self._other_states: list[str] = ['dem_file', 'dem', 'map', 'grid']
+        self._boolean_states: dict[str, bool] = {'all_rivers_plotted': False, 'catchment_plotted': False}
+        self._other_states: list[str] = ['dem_file', 'dem', 'map', 'grid', 'map_outputs', 'all_branches', 'delin_results', 'catchment_boundaries_fg']
         
         self._initialize_booleans()
         self._initialize_other()
         self._initialize_config()
         self._create_properties()
         
+        self._outlet = None
         st.session_state['state_manager'] = self
 
     def _initialize_booleans(self) -> None:
@@ -121,6 +122,7 @@ class StateManager:
         ctx = get_script_run_ctx()
         return ctx.session_id
 
+
     @property
     def outlet(self) -> tuple[float, float] | None:
         """
@@ -131,5 +133,13 @@ class StateManager:
         """
         if self.map_outputs is not None:
             if self.map_outputs['last_clicked'] is not None:
-                return self.map_outputs['last_clicked']['lat'], self.map_outputs['last_clicked']['lng']
-        return None
+                self._outlet = self.map_outputs['last_clicked']['lat'], self.map_outputs['last_clicked']['lng']
+        return self._outlet
+    
+    @property
+    def outlet_geo(self) -> tuple[float, float]:
+        if self.outlet is not None:
+            lat, lng = self.outlet
+            return self.config.proj.from_geo(lat, lng)        
+
+    
