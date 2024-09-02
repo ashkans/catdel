@@ -44,10 +44,10 @@ def main():
         
 
     
-    sm.outlet
-    sm.delin_results
-    st.write(sm.map_outputs)
-    sm.catchment_plotted 
+    #sm.outlet
+    #sm.delin_results
+    #st.write(sm.map_outputs)
+    #sm.catchment_plotted 
 
 
 if __name__ == '__main__':
