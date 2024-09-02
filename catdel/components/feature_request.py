@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from catdel import db
+from catdel.database import database as db
 
 FIELDS = {
     'user_name': {'type': 'text_input', 'label': 'Your Name', 'placeholder': 'John Doe'},

@@ -6,7 +6,7 @@ authors = ["Ashkan Shokri <ashkan.shokri@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "<3.13,>=3.10.0"
 streamlit = "^1.36.0"
 pysheds = "^0.4"
 fiona = "^1.9.6"
@@ -21,6 +21,7 @@ streamlit-javascript = "^0.1.5"
 htbuilder = "^0.6.2"
 python-dotenv = "^1.0.1"
 psycopg2 = "^2.9.9"
+replit-object-storage = "^1.0.0"
 
 
 [tool.poetry.group.dev.dependencies]

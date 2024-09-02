@@ -1,87 +1,55 @@
-import folium.raster_layers
 import streamlit as st
-
-
-
-from catdel import components
-from catdel import process
-from streamlit_folium import st_folium
 from catdel.state_manager import StateManager
-
-from catdel import db
-
+from catdel.add_ga import inject_ga_if_on_server
+from catdel.components.dem_uploader import DemUploader
+from catdel.components.map import Map
+from catdel.components import buttons
+from catdel.helpers import load_dem_and_grid
+from catdel.process import dem_processing as dp
+import numpy as np
+from catdel.components import feature_request
 
 sm = StateManager.get_instance()
+
+
+# initialize
+inject_ga_if_on_server()
+
 st.set_page_config('CatDel',**sm.config.page_config) # should go to config
-
-
-
-
-# only load Google analytics on server
-if st.config.get_option('server.runOnSave'):
-    from catdel import add_ga
-    add_ga.inject_ga()
-
+    
 
 def main():
 
-    components.buttons.add_sample_data_download()
+    # fileloader
+    du = DemUploader()
+    du()
+    load_dem_and_grid()
+
+    # map
+    m = Map()
+    m()
     
-    config = sm.config
-    
-    with st.expander('', expanded=sm.dem is None, icon=':material/upload:'):
-        components.misc.file_uploader()
-
-    
-    with st.spinner('Reading Grid and DEM...'):
-        process.read_grid_and_dem()
-    with st.spinner('Adding all streams...'):
-        process.add_all_streams() 
-
-    
-    if sm.dem is not None:
-        
-        m = components.folium_map.get_map()
-
-
-
-
-        if not sm.outlet:
-            st.write('### Select the location of the outlet on the map')
-            
-        with st.container(height=int(config.map_height*1.1)):
-            
-            sm.map_outputs = st_folium(m,
-                            width=config.map_width,
-                            height=config.map_height,
-                            returned_objects=['last_clicked'],
-                            render=False,
-                            use_container_width=True)
-            
-        
-
-        c1,c2,c3 = st.columns([0.33, 0.33, 0.33])
-        with c1:
-            components.buttons.delineate()
-            
-        with c2:
-            components.buttons.download_catchment()
-
-        with c3: 
-            components.buttons.download_streams()
+    # delin cat
+    buttons.delin_button() # handel no data yet for thiss
+    buttons.download_catch_button()
+    buttons.download_stream_button()
 
     with st.sidebar:
-        components.feature_request.modal()
+        feature_request.expander()
+        buttons.download_sample_data()
 
-    if not st.config.get_option('server.runOnSave'):
-        #st.write(st.session_state)
-        pass
 
-    else:
-        pass
+    # next is to find subcatchments.
+        
+        
 
-    #components.footer.footer()
+    
+    sm.outlet
+    sm.delin_results
+    st.write(sm.map_outputs)
+    sm.catchment_plotted 
 
 
 if __name__ == '__main__':
     main()
+

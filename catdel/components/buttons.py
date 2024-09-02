@@ -1,62 +1,91 @@
-
-from catdel.state_manager import StateManager
-from catdel import process
 import streamlit as st
+from catdel.components.map import Map
+from catdel.process import dem_processing as dp
+from catdel.state_manager import StateManager
+from io import BytesIO
+from catdel.database import database as db
 
-from catdel import db
-
-
-
-def delineate():
-        
-        sm = StateManager.get_instance()
-        process_button_disabled = False # sm.outlet_lat is None
-        if process_button_disabled:
-            process_button_name = 'Please select the outlet location on map.'
-        else:
-            process_button_name = 'Delineate!'
-
-        st.button(process_button_name, on_click=process.run_deliniation, type='primary', use_container_width=True, disabled=process_button_disabled)
-        
-def download_catchment():
-        def handel_click():
-            db.log('download_catchment', 'na')        
-        sm = StateManager.get_instance()
-        if sm.delin is not None:
-
-            buffer = process.buffer_catchment_geojson()
-
-            st.download_button(
-                label="Download Catchment Shape as GeoJSON",
-                data=buffer,
-                file_name="catchment_shape.geojson",
-                mime="application/geo+json",
-                use_container_width=True,
-                on_click=handel_click
-            )
+sm = StateManager.get_instance()
 
 
-def download_streams():
-        def handel_click():
-            db.log('download_streams', 'na')        
-        sm = StateManager.get_instance()
-        if sm.delin is not None:
+def buffer_geojson(dataframe):
+    """
+    Convert a GeoDataFrame to a GeoJSON buffer.
+    
+    Parameters:
+    dataframe (GeoDataFrame): The GeoDataFrame to convert.
+    
+    Returns:
+    BytesIO: A buffer containing the GeoJSON data.
+    """
+    buffer = BytesIO()
+    geojson = dataframe.to_json()
+    buffer.write(geojson.encode('utf-8'))
+    buffer.seek(0)
+    return buffer
 
-            buffer = process.buffer_stream_geojson()
+def buffer_stream_geojson():
+    gdf = sm.delin_results['branches']
+    return buffer_geojson(gdf)
 
-            st.download_button(
-                label="Download Stream Shape as GeoJSON",
-                data=buffer,
-                file_name="stream_shape.geojson",
-                mime="application/geo+json",
-                use_container_width=True,
-                on_click=handel_click
-            )
+def buffer_catchment_geojson():
+    gdf = sm.delin_results['catchment_shape']
+    return buffer_geojson(gdf)
 
 
-def add_sample_data_download():
+
+def _delin(loc):
+    return dp.delin(sm.dem, sm.grid, sm.config.acc_thr, sm.config.snap_thr, loc, dst_crs=sm.config.proj.dst_crs)    
+
+
+def handel_delin_button():
+    db.log('Delin button is clicked.', 'na')
+    sm.delin_results = _delin(sm.outlet_geo)
+    sm.catchment_plotted=False # need to replot as a new delin is happened
+    map = Map()
+    map.build_map() # to remove all old catchments
+    map.add_catchment_boundary(sm.delin_results['catchment_shape'])
+    map.add_catchment_branches(sm.delin_results['branches'])
+
+def handel_download_catch():
+    db.log('Download catchment button is clicked.', 'na')
+
+
+def handel_download_stream():
+    db.log('Download stream button is clicked.', 'na')
+
+    
+def delin_button():
+    if sm.dem is not None:
+        st.button('Delin',use_container_width=True, on_click=handel_delin_button)
+
+
+def download_catch_button():
+    if sm.delin_results is not None:
+        buffer = buffer_stream_geojson()
+        st.download_button('Download Catchment',
+                            data=buffer,
+                            file_name="catchment.geojson",
+                            mime="application/geo+json",
+                            use_container_width=True,
+                            on_click=handel_download_catch)    
+
+
+def download_stream_button():
+    if sm.delin_results is not None:
+        buffer = buffer_stream_geojson()
+        st.download_button('Download Stream',
+                            data=buffer,
+                            file_name="stream.geojson",
+                            mime="application/geo+json",
+                            use_container_width=True,
+                            on_click=handel_download_stream)
+    
+
+def download_sample_data():
     def handel_click():
-        db.log('add_sample_data_download', 'na')
+        db.log('download_sample_data', 'na')
+        
         
     with open("sample_data/sample_dem.tif", "rb") as file:
         st.sidebar.download_button(
@@ -68,5 +97,5 @@ def add_sample_data_download():
             on_click=handel_click
         )
 
-        
+
 

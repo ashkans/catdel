@@ -4,12 +4,14 @@ from catdel.projection import Projection
 
 
 default_config = {
+    'show_dem_boundary': True,
     'snap_thr': 5000,
     'acc_thr': 5000,
     'geographic_crs': 'epsg:4326',
     'dst_crs': 'EPSG:3857',
     'min_zoom': 11,
     'zoom_start': 12,
+    'coord_start': (-37.89619611561565, 145.0222074132716),
     'max_zoom': 17,
     'map_width': 700,
     'map_height': 500,
